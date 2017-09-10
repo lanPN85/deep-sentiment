@@ -1,2 +1,7 @@
-# deep-sentiment
-HUST NLP (97546)
+# Sentiment Analysis using combined LSTM/CNN model
+
+## Quickstart
+
+## Architecture
+
+## About
