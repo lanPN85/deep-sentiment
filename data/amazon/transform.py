@@ -14,9 +14,9 @@ total1.close()
 
 
 total = open("total.txt", "r")
-train = open("train.csv", "w+")
-test = open("test.csv", "w+")
-val = open("val.csv", "w+")
+train = open("train.tsv", "w+")
+test = open("test.tsv", "w+")
+val = open("val.tsv", "w+")
 lines = total.readlines()
 
 pos_count = 0
