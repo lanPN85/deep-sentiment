@@ -2,9 +2,9 @@ import unittest
 import os
 
 
-class DataTest(unittest.TestCase):
-    #_DATASETS = ['data/amazon', 'data/movies']
-    _DATASETS = ['data/amazon']
+class TestDatasets(unittest.TestCase):
+    _DATASETS = ['data/amazon', 'data/movies']
+    # _DATASETS = ['data/amazon']
     
     def test_exists(self):
         for set in self._DATASETS:
@@ -38,10 +38,10 @@ class DataTest(unittest.TestCase):
     def _load_data(self, path):
         f = open(path, 'rt')
         data = []
-        for line in f:
+        for i, line in enumerate(f):
             cols = line.split('\t')
-            self.assertEqual(len(cols), 2, msg='Incorrect column number')
-            self.assertIn(cols[0], ['Positive', 'Negative'], msg='Unknown label')
+            self.assertEqual(len(cols), 2, msg='Incorrect column number at line %d: %s' % (i + 1, cols))
+            self.assertIn(cols[0], ['Positive', 'Negative'], msg='Unknown label at line %d' % (i + 1))
             data.append(cols)
         f.close()
         return data

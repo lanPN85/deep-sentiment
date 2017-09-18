@@ -1,7 +1,7 @@
 import os
-train1 = open("train.ft.txt", "r")
-test1 = open("test.ft.txt", "r")
-total1 = open("total.txt", "w+")
+train1 = open("train.ft.txt", "r", encoding='utf-8')
+test1 = open("test.ft.txt", "r", encoding='utf-8')
+total1 = open("total.txt", "w+", encoding='utf-8')
 lines1 = train1.readlines()
 lines2 = test1.readlines()
 for line in lines1:
@@ -13,10 +13,10 @@ test1.close()
 total1.close()
 
 
-total = open("total.txt", "r")
-train = open("train.tsv", "w+")
-test = open("test.tsv", "w+")
-val = open("val.tsv", "w+")
+total = open("total.txt", "r", encoding='utf-8')
+train = open("train.tsv", "w+", encoding='utf-8')
+test = open("test.tsv", "w+", encoding='utf-8')
+val = open("val.tsv", "w+", encoding='utf-8')
 lines = total.readlines()
 
 pos_count = 0
