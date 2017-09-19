@@ -1,23 +1,26 @@
+from gensim.models.wrappers import FastText
+
 import numpy as np
 import nltk
+import os
 
 
-class SentimentDataLoader :
+class SentimentDataLoader:
     def __init__(self, path, files=('train.tsv', 'val.tsv', 'test.tsv'), keys=('train', 'val', 'test'), cutoff=None,
-                 doc_len=100, wv_path='', tokenizer=nltk.word_tokenize):
+                 doc_len=100, wv_path='data/fasttext/imdb.en', tokenizer=nltk.word_tokenize):
         self._path = path
         self._cutoff = cutoff
         self._raw = {k: None for k in keys}
         self._labels = {k: None for k in keys}
-        self._files = {k: f for k, f in zip(keys, files)}
+        self._files = {k: os.path.join(path, f) for k, f in zip(keys, files)}
         self._doc_len = doc_len
         self._wv = self._load_wv(wv_path)
-        self._embed_dims = 100
         self._tokenizer = tokenizer
 
-    def _load_wv(self, path):
-        # TODO Load fasttext model
-        return None
+    @staticmethod
+    def _load_wv(path):
+        model = FastText.load_fasttext_format(path)
+        return model
 
     def load_data(self, key=None):
         if key is not None:
@@ -26,6 +29,10 @@ class SentimentDataLoader :
             for k in self._raw.keys():
                 self._raw[k], self._labels[k] = self._read_file(self._files[k])
 
+        if self._cutoff is not None:
+            for k in self._raw.keys():
+                self._raw[k], self._labels[k] = self._raw[k][:self._cutoff], self._labels[k][:self._cutoff]
+
     def generate_data(self, key, batch_size):
         l = len(self._raw[key])
         while True:
@@ -33,7 +40,7 @@ class SentimentDataLoader :
                 raw = self._raw[key][i-batch_size:i]
                 labels = self._labels[key][i-batch_size:i]
 
-                mat = np.zeros((batch_size, self._doc_len, self._embed_dims))
+                mat = np.zeros((batch_size, self._doc_len, self.embed_dims))
                 for i, sent in enumerate(raw):
                     words = self._tokenizer(raw)
                     for j, w in enumerate(words):
@@ -63,7 +70,7 @@ class SentimentDataLoader :
 
     @property
     def embed_dims(self):
-        return self._embed_dims
+        return self._wv.vector_size
 
     @property
     def doc_len(self):

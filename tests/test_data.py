@@ -4,8 +4,7 @@ import os
 
 class TestDatasets(unittest.TestCase):
     _DATASETS = ['data/amazon', 'data/movies']
-    # _DATASETS = ['data/amazon']
-    
+
     def test_exists(self):
         for set in self._DATASETS:
             self.assertTrue(os.path.exists(set + '/train.tsv'))
