@@ -49,6 +49,9 @@ class SentimentDataLoader:
                 nlabels = [0 if l == 'Negative' else 1 for l in labels]
                 yield mat, nlabels
 
+    def data_len(self, key):
+        return len(self._raw[key])
+
     @staticmethod
     def _read_file(path):
         f = open(path, 'rt')

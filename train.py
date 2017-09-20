@@ -10,7 +10,6 @@ def parse_arguments():
     parser.add_argument('--name', default='default', dest='NAME',
                         help='The name for the directory containing the trained model.'
                              'This directory will always be inside \'trained/\'')
-
     parser.add_argument('-lr', '--learning-rate', default=LEARNING_RATE, dest='LR',
                         help="The model's initital learning rate")
     parser.add_argument('--doc-len', default=DOC_LEN, dest='DLEN', type=int,
