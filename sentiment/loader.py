@@ -42,11 +42,12 @@ class SentimentDataLoader:
 
                 mat = np.zeros((batch_size, self._doc_len, self.embed_dims))
                 for i, sent in enumerate(raw):
-                    words = self._tokenizer(raw)
+                    words = self._tokenizer(sent)
                     for j, w in enumerate(words):
                         mat[i][j] = self._wv[w]
 
-                nlabels = [0 if l == 'Negative' else 1 for l in labels]
+                nlabels = [[0, 1] if label == 'Negative'
+                           else [1, 0] for label in labels]
                 yield mat, nlabels
 
     def data_len(self, key):

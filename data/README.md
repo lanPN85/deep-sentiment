@@ -16,3 +16,4 @@ Download and extract the following into their respective folders.
 - [IMDB reviews](http://ai.stanford.edu/~amaas/data/sentiment/): `data/movies`.
 
 *Note: Run `python transform.py` after extraction to get the split training files.*
+
