@@ -9,6 +9,7 @@ Any datasets used for training must adhere to the following format:
 ## Word Vectors
 - This project uses Facebook's fastText for word embedding. The embeddings should be stored in the `data/fasttext` directory. Make sure to include both the `.vec` and `.bin` files.
 - Public fasttext models trained on Wikipedia crawl are available [here](https://github.com/facebookresearch/fastText/blob/master/pretrained-vectors.md). Note that these models can be quite large and may take several minutes to load.
+- For a smaller, more portable model, we trained our own 100-dimension embeddings using the unlabeled portion of the IMDB Movie Reviews dataset. The model can be downloaded [here](https://drive.google.com/file/d/0B9hSrQl6_TSdZGdCSVBobFIxNTQ/view?usp=sharing).
 
 ## Download Links
 Download and extract the following into their respective folders.
@@ -16,4 +17,3 @@ Download and extract the following into their respective folders.
 - [IMDB reviews](http://ai.stanford.edu/~amaas/data/sentiment/): `data/movies`.
 
 *Note: Run `python transform.py` after extraction to get the split training files.*
-
