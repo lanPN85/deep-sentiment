@@ -63,7 +63,7 @@ class SentimentDataLoader:
 
     @staticmethod
     def _read_file(path):
-        f = open(path, 'rt')
+        f = open(path, 'rt', encoding='utf-8')
         raw, labels = [], []
         for line in f:
             label, content = line.split('\t')
