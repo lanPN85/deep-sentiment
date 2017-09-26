@@ -3,6 +3,7 @@ from gensim.models.wrappers import FastText
 import numpy as np
 import nltk
 import os
+import pickle
 
 
 class SentimentDataLoader:
@@ -16,6 +17,7 @@ class SentimentDataLoader:
         self._doc_len = doc_len
         self._wv = self._load_wv(wv_path)
         self._tokenizer = tokenizer
+        self.FALLBACK_VECTOR = np.ones((self.embed_dims,), dtype=np.float32)
 
     @staticmethod
     def _load_wv(path):
@@ -42,9 +44,9 @@ class SentimentDataLoader:
 
                 mat = np.zeros((batch_size, self._doc_len, self.embed_dims))
                 for i, sent in enumerate(raw):
-                    words = self._tokenizer(sent)
+                    words = self._tokenizer(sent)[:self.doc_len]
                     for j, w in enumerate(words):
-                        mat[i][j] = self._wv[w]
+                        mat[i][j] = self._get_wordvec(w)
 
                 nlabels = [[0, 1] if label == 'Negative'
                            else [1, 0] for label in labels]
@@ -53,12 +55,18 @@ class SentimentDataLoader:
     def data_len(self, key):
         return len(self._raw[key])
 
+    def _get_wordvec(self, word):
+        try:
+            return self._wv[word]
+        except KeyError:
+            return self.FALLBACK_VECTOR
+
     @staticmethod
     def _read_file(path):
         f = open(path, 'rt')
         raw, labels = [], []
         for line in f:
-            content, label = line.split('\t')
+            label, content = line.split('\t')
             raw.append(content)
             labels.append(label)
         f.close()
@@ -82,3 +90,12 @@ class SentimentDataLoader:
 
     def __getitem__(self, item):
         return self._raw[item], self._labels[item]
+
+    def save(self, save_path):
+        f = open(save_path, 'wb')
+        pickle.dump(self, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    @classmethod
+    def load(cls, load_path):
+        f = open(load_path, 'rb')
+        return pickle.load(f, encoding='utf-8')

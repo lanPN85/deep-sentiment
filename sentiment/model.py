@@ -1,13 +1,20 @@
 from keras.optimizers import RMSprop
 from keras.models import Model, Sequential
-from keras.layers import LSTM, Conv1D, Dense, Masking, Concatenate, Input, Flatten
+from keras.layers import LSTM, Conv1D, Dense, Masking, Concatenate, Input, Flatten, AveragePooling1D
+from keras.callbacks import EarlyStopping, TensorBoard, CSVLogger
 
+import keras.backend as K
 import math
+import os
+import pickle
+
+from sentiment.loader import SentimentDataLoader
+from sentiment.callbacks import SentimentCallback
 
 
 class SentimentNet:
     def __init__(self, loader, lstm_layers=(64,), cnn_layers=(128,), cnn_filters=(128,),
-                 dropout=0.0, strides=1):
+                 dropout=0.0, strides=1, directory='./model', weights=None):
         self.loader = loader
         self.loader.load_data()
 
@@ -23,12 +30,16 @@ class SentimentNet:
 
         self._dropout = dropout
         self._strides = strides
+        self._dir = directory
         self._model = self._create_model()
+        if weights is not None:
+            self._model.load_weights(weights)
 
     def _create_model(self):
         # Create LSTM branch
         lstm_branch = Sequential(name='LBranch')
-        lstm_branch.add(Masking(input_shape=(self.loader.doc_len, self.loader.embed_dims)))
+        lstm_branch.add(Masking(input_shape=(self.loader.doc_len, self.loader.embed_dims,),
+                                name='Masking'))
         for i, n in enumerate(self._lstm_layers[:-1]):
             lstm_branch.add(LSTM(n, activation='tanh', recurrent_activation='hard_sigmoid',
                                  recurrent_dropout=self._dropout, dropout=self._dropout,
@@ -53,8 +64,10 @@ class SentimentNet:
                                       strides=self._strides, activation='hard_sigmoid',
                                       name='CNN_%d' % (i + 2)))
             cnn_branch.add(Conv1D(self._cnn_filters[0], self._cnn_layers[0],
-                                  strides=self._strides, activation='relu',
+                                  strides=self._strides, activation='tanh',
                                   name='CNN_%d' % len(self._cnn_filters)))
+        pooling_size = (int(cnn_branch.output_shape[1]),)
+        cnn_branch.add(AveragePooling1D(pool_size=pooling_size, name='Pooling'))
         cnn_branch.add(Flatten(name='Flattener'))
         cnn_branch.summary()
 
@@ -80,10 +93,20 @@ class SentimentNet:
         train_steps = int(math.ceil(self.loader.data_len(train_key) / batch_size))
         val_steps = int(math.ceil(self.loader.data_len(val_key) / batch_size))
 
-        callbacks = []
+        cb1 = SentimentCallback(self, save_monitor='val_loss', mode='desc')
+        cb2 = EarlyStopping(monitor='val_loss', patience=4, verbose=1)
+        cb3 = CSVLogger(os.path.join(self._dir, 'epochs.csv'), append=(start_from > 0))
+        cb4 = EarlyStopping(monitor='loss', patience=1, verbose=1)
+        callbacks = [cb1, cb2, cb3, cb4]
+        if K.backend() == 'tensorflow':
+            # noinspection PyTypeChecker
+            callbacks.append(TensorBoard(os.path.join(self._dir, 'tensorboard'),
+                                         batch_size=batch_size, histogram_freq=1,
+                                         write_grads=False, write_graph=True,
+                                         write_images=True))
 
         return self._model.fit_generator(self.loader.generate_data(key=train_key, batch_size=batch_size),
-                                         steps_per_epoch=train_steps, max_queue_size=2, initial_epoch=start_from,
+                                         steps_per_epoch=train_steps, max_queue_size=1, initial_epoch=start_from,
                                          validation_data=self.loader.generate_data(key=val_key, batch_size=batch_size),
                                          validation_steps=val_steps, callbacks=callbacks, epochs=epochs)
 
@@ -96,9 +119,49 @@ class SentimentNet:
     def evaluate(self, test_key='test'):
         pass
 
+    def save(self):
+        f1 = open(os.path.join(self._dir, 'config.pkl'), 'wb')
+        wpath = os.path.join(self._dir, 'weights.hdf5')
+        lpath = os.path.join(self._dir, 'loader.pkl')
+
+        self.loader.save(lpath)
+        self._model.save_weights(wpath)
+        config = {
+            'lstm_layers': self._lstm_layers,
+            'cnn_layers': self._cnn_layers,
+            'cnn_filters': self._cnn_filters,
+            'dropout': self._dropout,
+            'strides': self._strides,
+        }
+        pickle.dump(config, f1, pickle.HIGHEST_PROTOCOL)
+        f1.close()
+
+    @classmethod
+    def load(cls, directory):
+        f1 = open(os.path.join(directory, 'config.pkl'), 'rb')
+        wpath = os.path.join(directory, 'weights.hdf5')
+        lpath = os.path.join(directory, 'loader.pkl')
+
+        loader = SentimentDataLoader.load(lpath)
+        config = pickle.load(f1)
+        lstm_layers = config['lstm_layers']
+        cnn_layers = config['cnn_layers']
+        cnn_filters = config['cnn_filters']
+        dropout = config.get('dropout', 0.0)
+        strides = config['strides']
+
+        model = SentimentNet(loader, lstm_layers=lstm_layers, cnn_layers=cnn_layers,
+                             cnn_filters=cnn_filters, dropout=dropout, strides=strides,
+                             directory=directory, weights=wpath)
+        return model
+
     def __getitem__(self, item):
         return self.predict(item)
 
     @property
     def dropout(self):
         return self._dropout
+
+    @property
+    def directory(self):
+        return self._dir

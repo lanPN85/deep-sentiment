@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 
 import os
+import shutil
 
 from sentiment.settings import *
 from sentiment.model import SentimentNet
@@ -8,7 +9,9 @@ from sentiment.loader import SentimentDataLoader
 
 
 def parse_arguments():
-    parser = ArgumentParser()
+    parser = ArgumentParser(description='Script for training/resuming training of a deep-sentiment model. '
+                                        'Parameters like learning rate, batch size,... '
+                                        'override the values given in sentiment/settings.py')
     parser.add_argument('--name', default='default', dest='NAME',
                         help='The name for the directory containing the trained model.'
                              'This directory will always be inside \'trained/\'')
@@ -18,7 +21,7 @@ def parse_arguments():
                         help="The maximum length in words for each document")
     parser.add_argument('-bs', '--batch-size', default=BATCH_SIZE, dest='BATCH', type=int,
                         help="The batch size used for training")
-    parser.add_argument('--cutoff', default=DOC_CUTOFF, dest='CUT',
+    parser.add_argument('--cutoff', default=DOC_CUTOFF, type=int, dest='CUT',
                         help="The maximum number of documents to load for each set")
     parser.add_argument('--epochs', default=EPOCHS, dest='EPOCHS', type=int,
                         help="The number of epochs to train the model. "
@@ -27,7 +30,7 @@ def parse_arguments():
                         help="The path to the fasttext model to be used. "
                              "Extensions like .bin and .vec should be excluded.")
     parser.add_argument('--dropout', default=DROPOUT, type=float, dest='DROPOUT',
-                        help='Dropout value to be used across all layers during training.')
+                        help='Dropout value to be used across all recurrent layers during training.')
     parser.add_argument('--strides', default=STRIDES, type=int, dest='STRIDES',
                         help='Stride value to be used for all CNN layers.')
     parser.add_argument('--data-path', default=DATA_PATH, dest='PATH',
@@ -44,18 +47,22 @@ def parse_arguments():
 def main(args):
     os.makedirs('trained', exist_ok=True)
     os.makedirs('trained/' + args.NAME, exist_ok=True)
+    shutil.rmtree('trained/' + args.NAME + '/tensorboard', ignore_errors=True)
 
     if args.RESUME:
+        directory = os.path.join('trained', args.NAME)
+        print('Loading model from %s ... ' % directory, end='')
+        model = SentimentNet.load(directory)
+        print('Done.')
 
-        return
+    else:
+        print('Loading data... ', end='')
+        loader = SentimentDataLoader(args.PATH, cutoff=args.CUT, doc_len=args.DLEN, wv_path=args.WV_PATH)
+        print('Done.')
 
-    print('Loading data... ', end='')
-    loader = SentimentDataLoader(args.PATH, cutoff=args.CUT, doc_len=args.DLEN, wv_path=args.WV_PATH)
-    print('Done.')
-
-    print('Creating model...')
-    model = SentimentNet(loader, lstm_layers=LSTM_LAYERS, cnn_layers=CNN_LAYERS, cnn_filters=CNN_FILTERS,
-                         dropout=args.DROPOUT, strides=args.STRIDES)
+        print('Creating model...')
+        model = SentimentNet(loader, lstm_layers=LSTM_LAYERS, cnn_layers=CNN_LAYERS, cnn_filters=CNN_FILTERS,
+                             dropout=args.DROPOUT, strides=args.STRIDES, directory=os.path.join('trained', args.NAME))
 
     print('Compiling... ', end='')
     model.compile(learning_rate=args.LR)
