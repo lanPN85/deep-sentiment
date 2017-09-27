@@ -3,15 +3,17 @@ from argparse import ArgumentParser
 import os
 import shutil
 
-from sentiment.settings import *
+from settings import *
 from sentiment.model import SentimentNet
 from sentiment.loader import SentimentDataLoader
+
+import sentiment.utils as utils
 
 
 def parse_arguments():
     parser = ArgumentParser(description='Script for training/resuming training of a deep-sentiment model. '
                                         'Parameters like learning rate, batch size,... '
-                                        'override the values given in sentiment/settings.py')
+                                        'override the values given in `settings.py`')
     parser.add_argument('--name', default='default', dest='NAME',
                         help='The name for the directory containing the trained model.'
                              'This directory will always be inside \'trained/\'')
@@ -45,10 +47,13 @@ def parse_arguments():
 
 
 def main(args):
+    # Setup save directory
+    model_dir = os.path.join('trained', args.NAME)
     os.makedirs('trained', exist_ok=True)
-    os.makedirs('trained/' + args.NAME, exist_ok=True)
-    shutil.rmtree('trained/' + args.NAME + '/tensorboard', ignore_errors=True)
+    os.makedirs(model_dir, exist_ok=True)
+    shutil.rmtree(os.path.join(model_dir, 'tensorboard/'), ignore_errors=True)
 
+    # Load model if resuming
     if args.RESUME:
         directory = os.path.join('trained', args.NAME)
         print('Loading model from %s ... ' % directory, end='')
@@ -62,11 +67,18 @@ def main(args):
 
         print('Creating model...')
         model = SentimentNet(loader, lstm_layers=LSTM_LAYERS, cnn_layers=CNN_LAYERS, cnn_filters=CNN_FILTERS,
-                             dropout=args.DROPOUT, strides=args.STRIDES, directory=os.path.join('trained', args.NAME))
+                             dropout=args.DROPOUT, strides=args.STRIDES, directory=model_dir)
 
     print('Compiling... ', end='')
     model.compile(learning_rate=args.LR)
     print('Done.')
+
+    # Store settings in CSV file
+    settings_path = os.path.join(model_dir, 'settings.csv')
+    utils.store_dict_csv(settings_path, LSTM_LAYERS=LSTM_LAYERS, CNN_LAYERS=CNN_LAYERS,
+                         CNN_FILTERS=CNN_FILTERS, STRIDES=args.STRIDES, DATA_PATH=args.PATH,
+                         WV_PATH=args.WV_PATH, DOC_LEN=args.DLEN, DOC_CUTOFF=args.CUT,
+                         LEARNING_RATE=args.LR, DROPOUT=args.DROPOUT, BATCH_SIZE=args.BATCH)
 
     try:
         print('Starting training...')
