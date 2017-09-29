@@ -61,6 +61,13 @@ class SentimentDataLoader:
         except KeyError:
             return self.FALLBACK_VECTOR
 
+    def doc2mat(self, document):
+        words = self._tokenizer(document)[:self.doc_len]
+        mat = np.ones((1, self.doc_len, self.embed_dims))
+        for i, w in enumerate(words):
+            mat[0][i] = self._get_wordvec(w)
+        return mat
+
     @staticmethod
     def _read_file(path):
         f = open(path, 'rt', encoding='utf-8')
@@ -94,8 +101,11 @@ class SentimentDataLoader:
     def save(self, save_path):
         f = open(save_path, 'wb')
         pickle.dump(self, f, protocol=pickle.HIGHEST_PROTOCOL)
+        f.close()
 
     @classmethod
     def load(cls, load_path):
         f = open(load_path, 'rb')
-        return pickle.load(f, encoding='utf-8')
+        loader =  pickle.load(f, encoding='utf-8')
+        f.close()
+        return loader

@@ -6,6 +6,7 @@ from keras.callbacks import EarlyStopping, TensorBoard, CSVLogger
 import keras.backend as K
 import math
 import os
+import numpy as np
 import pickle
 
 from sentiment.loader import SentimentDataLoader
@@ -16,7 +17,6 @@ class SentimentNet:
     def __init__(self, loader, lstm_layers=(64,), cnn_layers=(128,), cnn_filters=(128,),
                  dropout=0.0, strides=1, directory='./model', weights=None):
         self.loader = loader
-        self.loader.load_data()
 
         self._lstm_layers = lstm_layers
         self._cnn_layers = cnn_layers
@@ -93,6 +93,9 @@ class SentimentNet:
         train_steps = int(math.ceil(self.loader.data_len(train_key) / batch_size))
         val_steps = int(math.ceil(self.loader.data_len(val_key) / batch_size))
 
+        self.loader.load_data(key=train_key)
+        self.loader.load_data(key=val_key)
+
         cb1 = SentimentCallback(self, save_monitor='val_loss', mode='desc')
         cb2 = EarlyStopping(monitor='val_loss', patience=4, verbose=1)
         cb3 = CSVLogger(os.path.join(self._dir, 'epochs.csv'), append=(start_from > 0))
@@ -111,13 +114,27 @@ class SentimentNet:
                                          validation_steps=val_steps, callbacks=callbacks, epochs=epochs)
 
     def predict(self, document):
-        pass
+        inp = self.loader.doc2mat(document)
+        out = self._model.predict(inp, batch_size=1, verbose=0)
+        return out[0]
 
-    def predict_batch(self, documents):
-        pass
+    def predict_batch(self, documents, verbose=1, batch_size=20):
+        inp = self.loader.doc2mat(documents[0])
+        for d in documents[1:]:
+            inp = np.vstack((inp, self.loader.doc2mat(d)))
+        return self._model.predict(inp, batch_size=batch_size, verbose=verbose)
 
-    def evaluate(self, test_key='test'):
-        pass
+    def evaluate(self, test_key='test', batch_size=20):
+        self._model.compile(RMSprop(), loss='categorical_crossentropy',
+                            metrics=['acc'])
+        steps = self.loader.data_len(test_key) / batch_size
+
+        scalars = self._model.evaluate_generator(self.loader.generate_data(key=test_key, batch_size=batch_size),
+                                                 steps=steps, max_queue_size=1)
+        names = [name.capitalize() for name in self._model.metrics_names]
+
+        self.compile()
+        return {k: v for k, v in zip(names, scalars)}
 
     def save(self):
         f1 = open(os.path.join(self._dir, 'config.pkl'), 'wb')
@@ -153,6 +170,7 @@ class SentimentNet:
         model = SentimentNet(loader, lstm_layers=lstm_layers, cnn_layers=cnn_layers,
                              cnn_filters=cnn_filters, dropout=dropout, strides=strides,
                              directory=directory, weights=wpath)
+        f1.close()
         return model
 
     def __getitem__(self, item):
