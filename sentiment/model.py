@@ -125,16 +125,10 @@ class SentimentNet:
         return self._model.predict(inp, batch_size=batch_size, verbose=verbose)
 
     def evaluate(self, test_key='test', batch_size=20):
-        self._model.compile(RMSprop(), loss='categorical_crossentropy',
-                            metrics=['acc'])
-        steps = self.loader.data_len(test_key) / batch_size
-
-        scalars = self._model.evaluate_generator(self.loader.generate_data(key=test_key, batch_size=batch_size),
-                                                 steps=steps, max_queue_size=1)
-        names = [name.capitalize() for name in self._model.metrics_names]
-
-        self.compile()
-        return {k: v for k, v in zip(names, scalars)}
+        self.loader.load_data(test_key)
+        raw, true_labels = self.loader[test_key]
+        preds = self.predict_batch(raw, verbose=0, batch_size=batch_size)
+        pred_labels = ['Positive' if p[0] > p[1] else 'Negative' for p in preds]
 
     def save(self):
         f1 = open(os.path.join(self._dir, 'config.pkl'), 'wb')
