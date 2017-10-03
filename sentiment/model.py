@@ -90,11 +90,11 @@ class SentimentNet:
                             metrics=['acc'])
 
     def train(self, train_key='train', val_key='val', batch_size=30, start_from=0, epochs=50):
-        train_steps = int(math.ceil(self.loader.data_len(train_key) / batch_size))
-        val_steps = int(math.ceil(self.loader.data_len(val_key) / batch_size))
-
         self.loader.load_data(key=train_key)
         self.loader.load_data(key=val_key)
+
+        train_steps = int(math.ceil(self.loader.data_len(train_key) / batch_size))
+        val_steps = int(math.ceil(self.loader.data_len(val_key) / batch_size))
 
         cb1 = SentimentCallback(self, save_monitor='val_loss', mode='desc')
         cb2 = EarlyStopping(monitor='val_loss', patience=4, verbose=1)
