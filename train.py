@@ -5,7 +5,7 @@ import shutil
 
 from settings import *
 from sentiment.model import SentimentNet
-from sentiment.loader import SentimentDataLoader
+from sentiment.loader import SentimentCompactLoader
 
 import sentiment.utils as utils
 
@@ -62,7 +62,7 @@ def main(args):
 
     else:
         print('Loading data... ', end='')
-        loader = SentimentDataLoader(args.PATH, cutoff=args.CUT, doc_len=args.DLEN, wv_path=args.WV_PATH)
+        loader = SentimentCompactLoader(args.PATH, cutoff=args.CUT, doc_len=args.DLEN, wv_path=args.WV_PATH)
         print('Done.')
 
         print('Creating model...')

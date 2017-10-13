@@ -53,4 +53,4 @@ def recall(true, pred, label):
 
 @zero_safe
 def f1_score(prec, rec):
-    return (prec + rec) / (2 * prec * rec)
+    return (2 * prec * rec) / (prec + rec)

@@ -14,7 +14,9 @@ class SentimentDataLoader:
         self._raw = {k: None for k in keys}
         self._labels = {k: None for k in keys}
         self._files = {k: os.path.join(path, f) for k, f in zip(keys, files)}
+        self._keys = keys
         self._doc_len = doc_len
+        self._wv_path = wv_path
         self._wv = self._load_wv(wv_path)
         self._tokenizer = tokenizer
         self.FALLBACK_VECTOR = np.ones((self.embed_dims,), dtype=np.float32)
@@ -109,3 +111,15 @@ class SentimentDataLoader:
         loader =  pickle.load(f, encoding='utf-8')
         f.close()
         return loader
+
+
+class SentimentCompactLoader(SentimentDataLoader):
+    def __getstate__(self):
+        return self._path, self._files, self._cutoff, self._wv_path, self._doc_len, self._tokenizer, self._keys
+
+    def __setstate__(self, state):
+        self._path, self._files, self._cutoff, self._wv_path, self._doc_len, self._tokenizer, self._keys = state
+        self.FALLBACK_VECTOR = np.ones((self.embed_dims,), dtype=np.float32)
+        self._raw = {k: None for k in self._keys}
+        self._labels = {k: None for k in self._keys}
+        self._wv = self._load_wv(self._wv_path)

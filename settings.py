@@ -1,12 +1,12 @@
 # Model settings
-LSTM_LAYERS = (64,)
-CNN_LAYERS = (3,)
-CNN_FILTERS = (64,)
+LSTM_LAYERS = (128,)
+CNN_LAYERS = (3, 3,)
+CNN_FILTERS = (128, 128,)
 STRIDES = 1
 
 # Loader settings
-DATA_PATH = 'data/amazon/'
-DOC_LEN = 400
+DATA_PATH = 'data/movies/'
+DOC_LEN = 300
 WORDVEC_PATH = 'data/fasttext/imdb.en'
 DOC_CUTOFF = None
 

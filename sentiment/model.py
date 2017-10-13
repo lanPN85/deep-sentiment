@@ -9,8 +9,9 @@ import os
 import numpy as np
 import pickle
 
-from sentiment.loader import SentimentDataLoader
+from sentiment.loader import SentimentCompactLoader
 from sentiment.callbacks import SentimentCallback
+from sentiment import metrics
 
 
 class SentimentNet:
@@ -119,16 +120,43 @@ class SentimentNet:
         return out[0]
 
     def predict_batch(self, documents, verbose=1, batch_size=20):
-        inp = self.loader.doc2mat(documents[0])
-        for d in documents[1:]:
-            inp = np.vstack((inp, self.loader.doc2mat(d)))
+        inp = [self.loader.doc2mat(documents[0])]
+        length = len(documents)
+
+        for i, d in enumerate(documents[1:]):
+            inp.append(self.loader.doc2mat(d))
+            if verbose > 0:
+                print('Vectorizing %d/%d' % (i+2, length), end='\r')
+        inp = np.asarray(inp, dtype=np.float32)
+        inp = np.reshape(inp, (length, self.loader.doc_len, self.loader.embed_dims))
+        if verbose > 0:
+            print('\nVectorization complete.')
         return self._model.predict(inp, batch_size=batch_size, verbose=verbose)
 
-    def evaluate(self, test_key='test', batch_size=20):
+    def evaluate(self, test_key='test', verbose=1, batch_size=20):
         self.loader.load_data(test_key)
         raw, true_labels = self.loader[test_key]
-        preds = self.predict_batch(raw, verbose=0, batch_size=batch_size)
+        preds = self.predict_batch(raw, verbose=verbose, batch_size=batch_size)
+
         pred_labels = ['Positive' if p[0] > p[1] else 'Negative' for p in preds]
+
+        mets = []
+        acc = metrics.accuracy(true_labels, pred_labels)
+        mets.append(('Accuracy', acc))
+
+        pos_precision = metrics.precision(true_labels, pred_labels, 'Positive')
+        mets.append(('Precision @ `Positive`', pos_precision))
+        pos_recall = metrics.recall(true_labels, pred_labels, 'Positive')
+        mets.append(('Recall @ `Positive`', pos_recall))
+        mets.append(('F1 @ `Positive`', metrics.f1_score(pos_precision, pos_recall)))
+
+        neg_precision = metrics.precision(true_labels, pred_labels, 'Negative')
+        mets.append(('Precision @ `Negative`', neg_precision))
+        neg_recall = metrics.recall(true_labels, pred_labels, 'Negative')
+        mets.append(('Recall @ `Negative`', neg_recall))
+        mets.append(('F1 @ `Negative`', metrics.f1_score(neg_precision, neg_recall)))
+
+        return mets
 
     def save(self):
         f1 = open(os.path.join(self._dir, 'config.pkl'), 'wb')
@@ -153,7 +181,7 @@ class SentimentNet:
         wpath = os.path.join(directory, 'weights.hdf5')
         lpath = os.path.join(directory, 'loader.pkl')
 
-        loader = SentimentDataLoader.load(lpath)
+        loader = SentimentCompactLoader.load(lpath)
         config = pickle.load(f1)
         lstm_layers = config['lstm_layers']
         cnn_layers = config['cnn_layers']
@@ -177,3 +205,7 @@ class SentimentNet:
     @property
     def directory(self):
         return self._dir
+
+    @directory.setter
+    def directory(self, value):
+        self._dir = value
