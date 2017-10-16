@@ -15,18 +15,21 @@ def parse_arguments():
 
 
 def main(args):
-    print('Loading model from %s ... ' % args.MODEL)
-    model = SentimentNet.load(args.MODEL)
-    model.loader.load_data(args.SET)
-    print('Done.')
+    try:
+        print('Loading model from %s ... ' % args.MODEL)
+        model = SentimentNet.load(args.MODEL)
+        model.loader.load_data(args.SET)
+        print('Done.')
 
-    print('Evaluating...')
-    metrics = model.evaluate_generator(test_key=args.SET, batch_size=100)
-    print('Done.')
+        print('Evaluating...')
+        metrics = model.evaluate_generator(test_key=args.SET, batch_size=100)
+        print('Done.')
 
-    print()
-    for m in metrics:
-        print('%s: %s' % (m[0], m[1]))
+        print()
+        for m in metrics:
+            print('%s: %s' % (m[0], m[1]))
+    except KeyboardInterrupt:
+        print('Evaluation interrupted...')
 
 
 if __name__ == '__main__':

@@ -4,4 +4,6 @@
 
 ## Architecture
 
+![](images/arch.png)
+
 ## About
