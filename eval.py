@@ -18,11 +18,10 @@ def main(args):
     print('Loading model from %s ... ' % args.MODEL)
     model = SentimentNet.load(args.MODEL)
     model.loader.load_data(args.SET)
-    raw, true_labels = model.loader[args.SET]
     print('Done.')
 
     print('Evaluating...')
-    metrics = model.evaluate(test_key=args.SET, batch_size=100)
+    metrics = model.evaluate_generator(test_key=args.SET, batch_size=100)
     print('Done.')
 
     print()

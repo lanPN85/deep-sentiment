@@ -54,6 +54,19 @@ class SentimentDataLoader:
                            else [1, 0] for label in labels]
                 yield mat, nlabels
 
+    def generate_nolabel(self, key, batch_size):
+        l = len(self._raw[key])
+        while True:
+            for i in range(batch_size, l, batch_size):
+                raw = self._raw[key][i - batch_size:i]
+
+                mat = np.zeros((batch_size, self._doc_len, self.embed_dims))
+                for i, sent in enumerate(raw):
+                    words = self._tokenizer(sent)[:self.doc_len]
+                    for j, w in enumerate(words):
+                        mat[i][j] = self._get_wordvec(w)
+                yield mat
+
     def data_len(self, key):
         return len(self._raw[key])
 

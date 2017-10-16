@@ -133,13 +133,8 @@ class SentimentNet:
             print('\nVectorization complete.')
         return self._model.predict(inp, batch_size=batch_size, verbose=verbose)
 
-    def evaluate(self, test_key='test', verbose=1, batch_size=20):
-        self.loader.load_data(test_key)
-        raw, true_labels = self.loader[test_key]
-        preds = self.predict_batch(raw, verbose=verbose, batch_size=batch_size)
-
-        pred_labels = ['Positive' if p[0] > p[1] else 'Negative' for p in preds]
-
+    @staticmethod
+    def _calculate_metrics(pred_labels, true_labels):
         mets = []
         acc = metrics.accuracy(true_labels, pred_labels)
         mets.append(('Accuracy', acc))
@@ -157,6 +152,24 @@ class SentimentNet:
         mets.append(('F1 @ `Negative`', metrics.f1_score(neg_precision, neg_recall)))
 
         return mets
+
+    def evaluate(self, test_key='test', verbose=1, batch_size=20):
+        self.loader.load_data(test_key)
+        raw, true_labels = self.loader[test_key]
+        preds = self.predict_batch(raw, verbose=verbose, batch_size=batch_size)
+
+        pred_labels = ['Positive' if p[0] > p[1] else 'Negative' for p in preds]
+        return self._calculate_metrics(pred_labels, true_labels)
+
+    def evaluate_generator(self, test_key='test', verbose=1, batch_size=20):
+        self.loader.load_data(test_key)
+        length = math.ceil(self.loader.data_len(test_key) / batch_size)
+        _, true_labels = self.loader[test_key]
+
+        preds = self._model.predict_generator(self.loader.generate_nolabel(test_key, batch_size), length,
+                                              verbose=verbose, max_queue_size=5, workers=1)
+        pred_labels = ['Positive' if p[0] > p[1] else 'Negative' for p in preds]
+        return self._calculate_metrics(pred_labels, true_labels)
 
     def save(self):
         f1 = open(os.path.join(self._dir, 'config.pkl'), 'wb')
