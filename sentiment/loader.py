@@ -119,7 +119,7 @@ class SentimentCompactLoader(SentimentDataLoader):
 
     def __setstate__(self, state):
         self._path, self._files, self._cutoff, self._wv_path, self._doc_len, self._tokenizer, self._keys = state
-        self.FALLBACK_VECTOR = np.ones((self.embed_dims,), dtype=np.float32)
         self._raw = {k: None for k in self._keys}
         self._labels = {k: None for k in self._keys}
         self._wv = self._load_wv(self._wv_path)
+        self.FALLBACK_VECTOR = np.ones((self.embed_dims,), dtype=np.float32)
