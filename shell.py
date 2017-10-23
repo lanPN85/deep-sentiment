@@ -1,5 +1,8 @@
 from argparse import ArgumentParser
 
+import sys
+import os
+
 from sentiment.model import SentimentNet
 
 
@@ -16,6 +19,11 @@ def main(args):
         print('Loading model from %s ... ' % args.MODEL)
         model = SentimentNet.load(args.MODEL)
         print('Done.')
+
+        if sys.platform.startswith('win'):
+            os.system('cls')
+        else:
+            os.system('clear')
 
         print('\nDeep Sentiment Shell')
         print('by Phan Ngoc Lan')

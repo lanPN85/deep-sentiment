@@ -13,7 +13,7 @@ class TestDatasets(unittest.TestCase):
 
     def test_ratio(self):
         for ds in self._DATASETS:
-            print('Testing %s...' % ds)
+            print('\nTesting %s...' % ds)
             train = self._load_data(ds + '/train.tsv')
             test = self._load_data(ds + '/test.tsv')
             val = self._load_data(ds + '/val.tsv')

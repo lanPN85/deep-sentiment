@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+import shutil
 
 
 from sentiment.loader import SentimentDataLoader
@@ -11,7 +12,7 @@ class TestModel(unittest.TestCase):
     def setUpClass(cls):
         cls.loader = SentimentDataLoader('./data/movies/', cutoff=100, doc_len=300)
         cls.loader.load_data()
-        cls.model = SentimentNet(cls.loader)
+        cls.model = SentimentNet(cls.loader, directory='trained/test')
 
     def test_train(self):
         self.model.compile()
@@ -25,6 +26,10 @@ class TestModel(unittest.TestCase):
 
     def test_evaluate(self):
         r = self.model.evaluate()
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree('trained/test', ignore_errors=True)
 
 
 if __name__ == '__main__':
