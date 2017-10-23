@@ -78,7 +78,7 @@ class SentimentDataLoader:
 
     def doc2mat(self, document):
         words = self._tokenizer(document)[:self.doc_len]
-        mat = np.ones((1, self.doc_len, self.embed_dims))
+        mat = np.zeros((1, self.doc_len, self.embed_dims))
         for i, w in enumerate(words):
             mat[0][i] = self._get_wordvec(w)
         return mat
