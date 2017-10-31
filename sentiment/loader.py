@@ -107,6 +107,14 @@ class SentimentDataLoader:
         return self._wv.vector_size
 
     @property
+    def wv_path(self):
+        return self._wv_path
+
+    @property
+    def tokenizer(self):
+        return self._tokenizer
+
+    @property
     def doc_len(self):
         return self._doc_len
 
@@ -121,7 +129,7 @@ class SentimentDataLoader:
     @classmethod
     def load(cls, load_path):
         f = open(load_path, 'rb')
-        loader =  pickle.load(f, encoding='utf-8')
+        loader = pickle.load(f, encoding='utf-8')
         f.close()
         return loader
 
