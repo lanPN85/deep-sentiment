@@ -1,0 +1,6 @@
+.env/
+dist/*
+!dist/stub
+
+data/*
+!data/README.md

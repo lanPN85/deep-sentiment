@@ -13,7 +13,7 @@ def parse_arguments():
                         help='Path to the pretrained model.')
     parser.add_argument('-f', dest='FILE', default=None,
                         help='Optional path to a text file containing documents. '
-                             'May be a TSV data file (e.g test,tsv).')
+                             'May be a TSV data file (e.g test.tsv).')
     parser.add_argument('-o', dest='OUT', default=sys.stdin,
                         help='Path to output file. Only applies when using -f.')
 

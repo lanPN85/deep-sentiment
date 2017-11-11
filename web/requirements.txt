@@ -1,0 +1,4 @@
+flask
+flask-cors
+
+../dist/deep-sentiment-0.1.0.tar.gz
