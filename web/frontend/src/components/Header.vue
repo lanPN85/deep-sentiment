@@ -13,7 +13,7 @@ export default {
 
 <style scoped>
 #site-header {
-    background-color: #0d47a1;
+    background-color: #373737;
     padding: 2px 5px 2px 15px;
 }
 

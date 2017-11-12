@@ -5,7 +5,7 @@
     <b-row>
         <b-col cols="4" offset="4">
             <b-button block variant="info" v-on:click="fetchData">
-                <icon name="refresh"></icon> Refresh chart
+                <icon name="refresh"></icon> Load Pie Chart
             </b-button>
         </b-col>
     </b-row>
@@ -13,6 +13,7 @@
 </template>
 
 <script>
+import $ from 'jquery'
 import 'vue-awesome/icons/refresh'
 import PieChart from './PieChart'
 
@@ -43,7 +44,11 @@ export default {
             }
         },
         fetchData: function() {
-
+            var component = this;
+            $.getJSON('/api/summary', function(data) {
+                component.summary = data;
+                component.fillData();
+            });
         }
     }
 }

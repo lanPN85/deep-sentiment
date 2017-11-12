@@ -9,7 +9,7 @@ import os
 import utils
 
 UPLOAD_FOLDER = './uploads'
-UPLOAD_NAME = 'temp'
+UPLOAD_NAME = None
 
 app = Flask(__name__, static_folder='./dist/static',
             template_folder='./dist')
@@ -47,6 +47,9 @@ def upload_file():
 
 @app.route('/api/summary/', methods=['GET', 'POST'])
 def summarize_data():
+    if UPLOAD_NAME is None:
+        flask.abort(400)
+
     if not __predicted:
         predict()
 
@@ -55,6 +58,9 @@ def summarize_data():
 
 @app.route('/api/listing/<label>')
 def list_documents(label):
+    if UPLOAD_NAME is None:
+        flask.abort(400)
+
     if not __predicted:
         predict()
 
@@ -66,6 +72,7 @@ def predict():
     global __documents, __summary, __predicted
 
     __documents = []
+    __predicted = True
 
     docs = utils.extract_docs(os.path.join(UPLOAD_FOLDER, UPLOAD_NAME))
     scores = __MODEL.predict_batch(docs, verbose=1, batch_size=100)
@@ -82,15 +89,13 @@ def predict():
             label = 'positive'
             pos += 1
         __documents.append({
-            'content': doc, 'score': float(score[0]), 'label': label
+            'content': doc[:100] + '...', 'score': '%.3f' % float(score[0]),
+            'label': label, 'full': doc
         })
 
     __summary = {
-        'positive': pos, 'unsure': uns, 'negative': neg,
-        'total': len(docs)
+        'positive': pos, 'unsure': uns, 'negative': neg
     }
-
-    __predicted = True
 
 
 # Execution
@@ -118,7 +123,7 @@ def main(args):
             r'/api/*': {'origins': '*'}
         })
 
-    app.run(host='0.0.0.0', port=args.PORT, debug=args.DEBUG)
+    app.run(host='0.0.0.0', port=args.PORT)
 
 
 if __name__ == '__main__':
