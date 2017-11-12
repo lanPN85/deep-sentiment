@@ -1,4 +1,4 @@
-# frontend
+# DeepSentiment frontend
 
 > Frontend for DeepSentiment server
 

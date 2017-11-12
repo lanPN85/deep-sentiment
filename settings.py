@@ -1,7 +1,7 @@
 # Model settings
 LSTM_LAYERS = (128,)
-CNN_LAYERS = (3, 3,)
-CNN_FILTERS = (128, 128,)
+CNN_LAYERS = (3,)
+CNN_FILTERS = (128,)
 STRIDES = 1
 
 # Loader settings
@@ -14,4 +14,4 @@ DOC_CUTOFF = None
 LEARNING_RATE = 0.001
 EPOCHS = 100
 DROPOUT = 0.0
-BATCH_SIZE = 30
+BATCH_SIZE = 100
