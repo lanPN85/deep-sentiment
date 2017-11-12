@@ -1,6 +1,6 @@
 <template>
 <b-container fluid id="app">
-  <Header/>
+  <SiteHeader/>
   <b-row id="main-pane">
     <b-col cols="4">
       <Sidebar/>
@@ -14,14 +14,14 @@
 </template>
 
 <script>
-import Header from './components/Header'
+import SiteHeader from './components/Header'
 import Sidebar from './components/Sidebar'
 import GraphView from './components/GraphView'
 
 export default {
   name: 'app',
   components: {
-    Header, Sidebar, GraphView
+    SiteHeader, Sidebar, GraphView
   }
 }
 </script>

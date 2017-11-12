@@ -1,5 +1,5 @@
 <template>
-<div id="header">
+<div id="site-header">
     <h2>Deep Sentiment</h2>
     <p>Sentiment analysis with deep learning</p>
 </div>
@@ -7,21 +7,21 @@
 
 <script>
 export default {
-    name: 'Header',
+    name: 'SiteHeader',
 }
 </script>
 
 <style scoped>
-#header {
+#site-header {
     background-color: #0d47a1;
     padding: 2px 5px 2px 15px;
 }
 
-#header h2, p {
+#site-header h2, p {
     color: white;
 }
 
-#header h2 {
+#site-header h2 {
     font-weight: bold;
 }
 </style>
