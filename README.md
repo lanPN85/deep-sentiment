@@ -2,8 +2,8 @@
 
 ## Quickstart
 
-## Architecture
 
+## Architecture
 ![](images/arch.png)
 
 ## About

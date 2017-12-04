@@ -1,7 +1,7 @@
 <template>
 	<div class='details-table'>
-		<b-pagination align="center" size="sm" limit="7" :total-rows="(items != undefined) ? items.length : 0" v-model="current_page" :per-page="5"></b-pagination>
-		<b-table striped hover :items="items" :fields="listing_fields" :per-page="5" :current-page="current_page">
+		<b-pagination align="center" size="sm" limit="10" :total-rows="(items != undefined) ? items.length : 0" v-model="current_page" :per-page="7"></b-pagination>
+		<b-table striped hover :items="items" :fields="listing_fields" :per-page="7" :current-page="current_page">
 			<template slot="show_details" slot-scope="row">
 				<b-form-checkbox v-model="row.item._showDetails"></b-form-checkbox>
 			</template>
@@ -11,7 +11,7 @@
 				</b-card>
 			</template>
 		</b-table>
-		<b-pagination align="center" size="sm" limit="7" :total-rows="(items != undefined) ? items.length : 0" v-model="current_page" :per-page="5"></b-pagination>
+		<b-pagination align="center" size="sm" limit="10" :total-rows="(items != undefined) ? items.length : 0" v-model="current_page" :per-page="7"></b-pagination>
 	</div>
 </template>
 

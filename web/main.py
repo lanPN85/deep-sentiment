@@ -1,3 +1,6 @@
+import sys
+sys.path.extend(['.'])
+
 from flask import Flask
 from flask_cors import CORS
 from argparse import ArgumentParser
@@ -5,11 +8,13 @@ from sentiment.model import SentimentNet
 
 import flask
 import os
+import shutil
+import webbrowser
 
 import utils
 
 UPLOAD_FOLDER = './uploads'
-UPLOAD_NAME = None
+UPLOAD_NAME = 'temp'
 
 app = Flask(__name__, static_folder='./dist/static',
             template_folder='./dist')
@@ -27,11 +32,15 @@ __predicted = False
 __documents = []
 __summary = {}
 __MODEL = None
+__lock = False
 
 
 @app.route('/api/upload/', methods=['POST'])
 def upload_file():
-    global UPLOAD_NAME, __predicted
+    global UPLOAD_NAME, __predicted, __lock
+
+    while __lock:
+        pass
 
     file = flask.request.files['file']
     if not utils.allowed_file(file.filename):
@@ -47,8 +56,13 @@ def upload_file():
 
 @app.route('/api/summary/', methods=['GET', 'POST'])
 def summarize_data():
+    global __lock
+
     if UPLOAD_NAME is None:
         flask.abort(400)
+
+    while __lock:
+        pass
 
     if not __predicted:
         predict()
@@ -58,8 +72,13 @@ def summarize_data():
 
 @app.route('/api/listing/<label>')
 def list_documents(label):
+    global __lock
+
     if UPLOAD_NAME is None:
         flask.abort(400)
+
+    while __lock:
+        pass
 
     if not __predicted:
         predict()
@@ -69,10 +88,11 @@ def list_documents(label):
 
 
 def predict():
-    global __documents, __summary, __predicted
+    global __documents, __summary, __predicted, __lock
+
+    __lock = True
 
     __documents = []
-    __predicted = True
 
     docs = utils.extract_docs(os.path.join(UPLOAD_FOLDER, UPLOAD_NAME))
     scores = __MODEL.predict_batch(docs, verbose=1, batch_size=100)
@@ -96,6 +116,9 @@ def predict():
     __summary = {
         'positive': pos, 'unsure': uns, 'negative': neg
     }
+
+    __predicted = True
+    __lock = False
 
 
 # Execution
@@ -123,7 +146,12 @@ def main(args):
             r'/api/*': {'origins': '*'}
         })
 
-    app.run(host='0.0.0.0', port=args.PORT)
+    webbrowser.open_new_tab('http://localhost:5000')
+    try:
+        app.run(host='0.0.0.0', port=args.PORT)
+    finally:
+        print()
+        shutil.rmtree(UPLOAD_FOLDER, ignore_errors=True)
 
 
 if __name__ == '__main__':

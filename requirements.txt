@@ -1,5 +1,7 @@
-keras==2.0.6
+keras>=2.0.6
 tensorflow
 gensim
 nltk
 h5py
+flask
+flask-cors

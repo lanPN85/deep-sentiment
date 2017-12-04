@@ -9,7 +9,7 @@
         <icon name="circle-o-notch" scale="0.75" spin></icon> Processing file. This may take several minutes.
     </p>
 
-    <div id="detail-pane" v-if="listing">
+    <div id="detail-pane" v-if="isReady">
         <h5>Details</h5>
         <b-tabs>
             <b-tab title="Positive">
@@ -30,6 +30,7 @@
 import 'vue-awesome/icons/circle-o-notch'
 import $ from 'jquery'
 import DetailsTable from './DetailsTable'
+import { mapGetters } from 'vuex'
 
 export default {
     name: 'Sidebar',
@@ -41,6 +42,9 @@ export default {
             isLoading: false
         }
     },
+    computed: {
+        ...mapGetters(['isReady'])
+    },
     components: {
         DetailsTable
     },
@@ -51,6 +55,7 @@ export default {
             this.source_name = this.file.name;
             this.listing = null;
             this.isLoading = true;
+            this.$store.commit('getUnready');
 
             formData.append('file', this.file, this.file.name);
 
@@ -72,6 +77,7 @@ export default {
                                     tmp_listing.unsure = data;
                                     component.listing = tmp_listing;
                                     component.isLoading = false;
+                                    component.$store.commit('getReady');
                                 });
                             });
                         });
@@ -92,8 +98,8 @@ export default {
     border-style: solid;
     border-color: black;
     border-width: 0 1px 0 0;
-    min-height: 80vh;
-    max-height: 85vh;
+    min-height: 90vh;
+    max-height: 95vh;
     overflow: scroll;
 }
 

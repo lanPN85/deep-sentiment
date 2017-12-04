@@ -1,12 +1,16 @@
 <template>
 <div id="graphview">
-    <h2 class="text-center" v-if="summaryWrapper">Sentiment Distribution</h2>
+    <h1 class="text-center" v-if="summaryWrapper">Sentiment Distribution</h1>
     <PieChart :options="{responsive: true, maintainAspectRatio: false}" :chart-data="summaryWrapper" id="main-chart" v-if="summaryWrapper"/>
-    <b-row>
-        <b-col cols="4" offset="4">
-            <b-button block variant="info" v-on:click="fetchData">
-                <icon name="refresh"></icon> Load Pie Chart
-            </b-button>
+    
+    <b-row v-if="isReady">
+        <b-col cols="6" offset="3">
+            <img src="../assets/ratingbar.png" height="40vw" width="100%"/>
+        </b-col>
+    </b-row>
+    <b-row v-if="isReady">
+        <b-col cols="6" offset="3">
+            <p class="text-center rb-subtitle">Rating by sentiment score</p>
         </b-col>
     </b-row>
 </div>
@@ -16,6 +20,7 @@
 import $ from 'jquery'
 import 'vue-awesome/icons/refresh'
 import PieChart from './PieChart'
+import { mapGetters } from 'vuex'
 
 export default {
     name: 'GraphView',
@@ -26,6 +31,18 @@ export default {
         return {
             summary: null,
             summaryWrapper: null
+        }
+    },
+    computed: {
+        ...mapGetters(['isReady'])
+    },
+    watch: {
+        isReady: function(val) {
+            if (val) this.fetchData();
+            else {
+                this.summaryWrapper = null;
+                this.summary = null;
+            }    
         }
     },
     methods: {
@@ -62,5 +79,14 @@ export default {
 #main-chart {
     margin-top: 10px;
     margin-bottom: 20px;
+    min-height: 65vh;
+}
+
+#bar-wrap {
+    height: 5px;
+}
+
+.rb-subtitle {
+    font-size: 11pt;
 }
 </style>

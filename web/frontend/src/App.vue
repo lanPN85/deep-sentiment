@@ -39,6 +39,6 @@ h1, h2, h3, h4, h5, h6, p {
 }
 
 P {
-  font-size: 11pt;
+  font-size: 12pt;
 }
 </style>
