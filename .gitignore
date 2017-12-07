@@ -4,6 +4,8 @@ data/*/*
 !data/**/*.md
 trained/*
 !trained/stub
+images/report/
+images/code/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
