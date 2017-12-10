@@ -1,7 +1,8 @@
 <template>
 <div id="site-header">
     <h2>Deep Sentiment</h2>
-    <p>Sentiment analysis with deep learning</p>
+    <p><b>Sentiment analysis with deep learning</b></p>
+    <p class="subtitle text-right">By Phan Ngoc Lan, Nguyen Duy Manh & Thieu Hai Hoan</p>
 </div>
 </template>
 
@@ -12,6 +13,10 @@ export default {
 </script>
 
 <style scoped>
+.subtitle {
+    font-size: smaller;
+}
+
 #site-header {
     background-color: #373737;
     padding: 2px 5px 2px 15px;
